@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Podgląd z kamery</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2a5298">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        video {
+            width: 90%;
+            max-width: 600px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        button {
+            background: #ffffff22;
+            border: 2px solid white;
+            border-radius: 10px;
+            padding: 10px 20px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: white;
+            color: #2a5298;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Podgląd z Kamery</h1>
+
+<video id="camera" autoplay playsinline></video>
+
+<button onclick="switchCamera()">Zmień kamerę (przód/tył)</button>
+
+<script>
+let currentFacingMode = "user"; // "user" = front camera, "environment" = back camera
+let stream;
+
+async function startCamera() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: currentFacingMode },
+            audio: false
+        });
+
+        const videoElement = document.getElementById('camera');
+        videoElement.srcObject = stream;
+    } catch (error) {
+        alert('Nie można uzyskać dostępu do kamery: ' + error.message);
+    }
+}
+
+function switchCamera() {
+    currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
+    startCamera();
+}
+
+// Start kamery po załadowaniu strony
+startCamera();
+
+// Rejestracja service worker'a
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service Worker zarejestrowany', reg))
+        .catch(err => console.error('Service Worker error', err));
+}
+</script>
+
+</body>
+</html>
